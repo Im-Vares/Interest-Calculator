@@ -2,28 +2,41 @@ import pandas as pd
 import streamlit as st
 
 def read_fuel_elements_from_excel(df, element_column, value_column):
-    fuel_elements = []
-    element_names = []
+    """
+    Считывает топливные элементы и их значения из файла Excel.
 
-    for element, value in zip(df[element_column], df[value_column]):
-        try:
-            numeric_value = float(value)
-            fuel_elements.append(numeric_value)
-            element_names.append(element)
-        except ValueError:
-            continue
+    Аргументы:
+        df(pandas.DataFrame): DataFrame, содержащий данные из файла Excel.
+        element_column(str): Имя столбца, содержащего названия топливных элементов.
+        value_column (str): Имя столбца, содержащего значения топливных элементов.
 
-    num_elements = len(fuel_elements)
-
+    Возвращает:
+        return: кортеж, содержащий топливные элементы, количество элементов и имена элементов.
+    """
+    fuel_elements = pd.to_numeric(df[value_column]).tolist()
+    num_elements = len(df[element_column])
+    element_names = df[element_column].tolist()
     return fuel_elements, num_elements, element_names
 
-
 def list_gen(list_of_fuel_elements, list_of_percent):
+    """
+   Создает список расчетных значений на основе топливных элементов и их процентного содержания.
+
+    Аргументы:
+        list_of_fuel_elements (list): Список значений топливных элементов.
+        list_of_percent (list): Список процентов для каждого топливного элемента.
+
+    Возвращает:
+        list: Список вычисляемых значений.
+    """
     list_of_percent = [num * 0.01 for num in list_of_percent]
     result = [x * y for x, y in zip(list_of_percent, list_of_fuel_elements)]
     return result
 
 def main():
+    """
+   Основная функция приложения Streamlit.
+    """
     st.title("Fuel Data Calculation")
     st.write("Upload an Excel file with the fuel elements and their values.")
 
@@ -53,7 +66,6 @@ def main():
         output_df = pd.DataFrame({"Element": element_names, "Percentage": list_of_percent, "Result": result})
         st.write("Download Result Table")
         st.download_button(label="Download", data=output_df.to_csv(index=False), file_name="result_table.csv")
-
 
 if __name__ == "__main__":
     main()
